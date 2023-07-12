@@ -1,0 +1,13 @@
+<div class="sidebar_info">
+    <ul style="line-height:1.4em">
+        <?php foreach($fields as $key=>$field) :  ?>
+            <?php if(is_array($field)) : ?>
+
+            <?php else : ?>
+            <li>
+                <span class=""><?=$key?></span><br><?=$field;?>
+            </li>
+            <?php endif ?>
+        <?php endforeach ?>
+    </ul>
+</div>
