@@ -2,7 +2,7 @@
 
 namespace Waka\Ds\Classes\Traits;
 
-
+use Winter\Storm\Exception\ApplicationException;
 
 trait DsResolver
 {
@@ -11,32 +11,62 @@ trait DsResolver
 
     public function dsMap($key = 'main', $paramsVar = [])
     {
-        $config = $this->getYamlMapConfig()[$key];
-        $label = $config['label'];
+        if (empty(trim($key))) $key = 'main';
+        $config = $this->getYamlMapConfig()[$key] ?? null;
+        if(!$config) {
+            throw new ApplicationException('Impossible de trouver dans map la clef '.$key.' dans '.get_class($this));
+        }
+        //trace_log($config);
+        $label = $config['label'] ?? 'INC';
         $fields = $config['fields'];
-
-        $interpretedParams = $this->interpretParams($paramsVar);
-        $fields = $this->mergeParams($fields, $interpretedParams);
+        if(!$fields) {
+            throw new ApplicationException('Impossible de trouver dans map les fields '.$key.' dans '.get_class($this));
+        }
+        $fields = $this->mergeParams($fields, $paramsVar);
 
         $dsDatas = [];
         foreach ($fields as $key => $field) {
-            $value = $this->resolveField($key, $field);
+            $value = $this->resolveField($key, $field, []);
             $dsDatas[$key] = $value;
         }
 
         return [
             'label' => $label,
-            'datas' => $dsDatas
+            'ds' => $dsDatas
         ];
     }
 
-    
-
-
-    public function resolveField($key, $field)
+    public function dsMapLabel($key = 'main')
     {
-        // trace_log('resolveField');
+        if (empty(trim($key))) $key = 'main';
+        $config = $this->getYamlMapConfig()[$key];
+        $label = $config['label'] ?? 'INC';
+        $fields = $config['fields'];
+        $dsDatas = [];
+        foreach ($fields as $key => $field) {
+            $type = $field['type'] ?? false;
+            $value = $this->resolveField($key, $field, ['withLabel' => true]);
+            $dsDatas [$key] = [
+                    'label' => \Lang::get($field['label'] ?? null),
+                    'key' => $key,
+                    'type' => $type,
+                    'value' => $value,
+            ];
+        }
+        return [
+            'label' => $label,
+            'ds' => $dsDatas
+        ];
+    }
+
+
+
+
+    public function resolveField($key, $field, $opt)
+    {
+
         $fieldType = $field['type'] ?? null;
+        // trace_log('resolveField  : '.$key.' : '.$fieldType.' : '.get_class($this));
         if (!$fieldType) {
             return $this->{$key};
         } else {
@@ -44,12 +74,16 @@ trait DsResolver
             if (!method_exists($this, $method)) {
                 throw new \Exception("Method $method does not exist in " . get_class($this));
             } else {
-                return $this->{$method}($key, $field);
+                //trace_log($method);
+                //trace_log($key);
+                //trace_log($field);
+                //trace_log($opt);
+                return $this->{$method}($key, $field, $opt);
             }
         }
     }
 
-    
+
     public function getYamlMapConfig()
     {
         $yamlFile = $this->guessConfigPathFrom($this, '/map.yaml');

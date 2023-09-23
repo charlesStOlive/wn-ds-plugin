@@ -29,6 +29,7 @@ class Plugin extends PluginBase
      */
     public function register(): void
     {
+        
     }
 
     /**
@@ -36,37 +37,23 @@ class Plugin extends PluginBase
      */
     public function boot(): void
     {
-        // \Waka\Ds\Classes\Traits\DsResolver::extend(function ($behavior) {
-        //     $behavior->addDynamicMethod('dsImage', function ($key, $field) use ($behavior) {
-
-
-        //         if (!$behavior->parent->hasRelation($key)) {
-        //             throw new \Exception("Relation $key does not exist in " . get_class($this));
-        //         }
-        //         $relationData = $behavior->parent->{$key}()->get();
-
-        //         if ($relationData->isEmpty()) {
-        //             return [];
-        //         }
-
-        //         $width = $field['agrs']['width']['default'] ?? 500;
-        //         $height = $field['agrs']['width']['default'] ?? 500;
-
-        //         return [
-        //             'path' => $behavior->parent->logo->getThumb($width * 2, $height * 2, ['mode' => 'auto']),
-        //             'width' => $width,
-        //             'height' => $height,
-        //         ];
-        //     });
-        // });
+    
     }
 
-    /**
-     * Registers any frontend components implemented in this plugin.
-     */
-    public function registerComponents(): array
+    public function registerMarkupTags()
     {
-        return [];
+        return [
+            'functions' => [
+                'twigDsContent' => function (string $content, array $data = []) {
+                    if(!empty($data)) {
+                        return \Twig::parse($content, $data);
+                    } else {
+                        return $content;
+                    }
+                    return $content;
+                },
+            ]
+        ];
     }
 
     public function registerFormWidgets(): array
@@ -83,13 +70,6 @@ class Plugin extends PluginBase
     {
         return []; // Remove this line to activate
 
-        return [
-            'waka.ds.some_permission' => [
-                'tab' => 'waka.ds::lang.plugin.name',
-                'label' => 'waka.ds::lang.permissions.some_permission',
-                'roles' => [UserRole::CODE_DEVELOPER, UserRole::CODE_PUBLISHER],
-            ],
-        ];
     }
 
     /**
@@ -99,14 +79,5 @@ class Plugin extends PluginBase
     {
         return []; // Remove this line to activate
 
-        return [
-            'ds' => [
-                'label'       => 'waka.ds::lang.plugin.name',
-                'url'         => Backend::url('waka/ds/mycontroller'),
-                'icon'        => 'icon-leaf',
-                'permissions' => ['waka.ds.*'],
-                'order'       => 500,
-            ],
-        ];
     }
 }

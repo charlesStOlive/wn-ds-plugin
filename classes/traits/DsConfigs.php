@@ -9,6 +9,7 @@ trait DsConfigs
 
     public function dsGetParamsConfig($key = 'main')
     {
+        if (empty(trim($key))) $key = 'main';
         $configFields = $this->getYamlMapConfig()[$key]['fields'];
         $fieldsWithParamsConfig = [];
 
@@ -33,7 +34,7 @@ trait DsConfigs
 
                 // Add additional fields and move existing fields under form['fields']
                 $fieldsWithParamsConfig[$fieldKey] = [
-                    'label' => $fieldKey,
+                    'label' => "Configuration de la requête",
                     'usePanelStyles' => false,
                     'type' => 'nestedform',
                     'form' => [

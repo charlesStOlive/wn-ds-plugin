@@ -106,7 +106,7 @@ class DsBehavior extends ExtensionBase
         }
     }
 
-    public function dsImage($key, $field)
+    public function dsImage($key, $field, $opt)
     {
 
 
@@ -123,13 +123,13 @@ class DsBehavior extends ExtensionBase
         $height = $field['agrs']['width']['default'] ?? 500;
 
         return [
-            'path' => $this->parent->logo->getThumb($width * 2, $height * 2, ['mode' => 'auto']),
+            'path' => $this->parent->{$key}->getThumb($width * 2, $height * 2, ['mode' => 'auto']),
             'width' => $width,
             'height' => $height,
         ];
     }
 
-    public function dsImages($key, $field)
+    public function dsImages($key, $field, $opt)
     {
         if (!$this->parent->hasRelation($key)) {
             throw new \Exception("Relation $key does not exist in " . get_class($this));
@@ -152,7 +152,7 @@ class DsBehavior extends ExtensionBase
         });
     }
 
-    public function dsDate($key, $field)
+    public function dsDate($key, $field, $opt)
     {
         $dateFormat = $field['format'] ?? 'Y-m-d H:i:s';
         if ($this->parent->{$key} instanceof \Carbon\Carbon) {

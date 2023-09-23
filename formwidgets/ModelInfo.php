@@ -23,17 +23,18 @@ class ModelInfo extends FormWidgetBase
     public $src;
     public $parsedFields;
     public $editPermissions = null;
+    public $dsMap;
 
     /**
      * @inheritDoc
      */
     public function init()
     {
-        
+
 
         $this->fillFromConfig([
             'label',
-            'map',
+            'dsMap',
         ]);
     }
 
@@ -42,205 +43,92 @@ class ModelInfo extends FormWidgetBase
      */
     public function render()
     {
-        trace_log('render');
+        //trace_log('render MODEL INFO');
         $this->prepareVars();
-        // $this->vars['parsedFields'] = $this->parsedFields;
         $this->vars['label'] = $this->label;
-        // $this->vars['modelId'] = $this->model->id;
-        // $hasEditpermission = true;
-        // if ($this->editPermissions) {
-        //     $hasEditpermission = \BackendAuth::getUser()->hasAccess($this->editPermissions);
-        // }
-        // $this->vars['hasEditpermission'] = $hasEditpermission;
-        return $this->makePartial('modelinfo');
+        return $this->makePartial('modelInfo');
     }
-
     /**
      * Prepares the form widget view data
      */
     public function prepareVars()
-    { 
-        // $src = null;
-        // if (is_array($this->src)) {
-        //     $src = $this->src;
-        // } else {
-        //     $src = \Yaml::parseFile(plugins_path() . '/' . $this->src);
-        // }
-        // $this->fields = $src['fields'];
-        // if (!$this->fields) {
-        //     throw new \SystemException('la config  side bar info n a pas été trouvée');
-        // }
-        // $this->parsedFields = $this->setValues($this->fields);
-    }
-
-    public function setValues($fields)
     {
-        $parsedFieldsData = [];
-        foreach ($fields as $key => $field) {
-            $showIf =  $field['showIf'] ?? null;
-            if ($showIf) {
-                $showField = $showIf['field'] ?? null;
-                $fieldToTest = array_get($this->model, $showField);
-                $tests = $showIf['tests'] ?? null;
-                $condition = $showIf['condition'] ?? null;
-                if (!$showField or !is_array($tests)) {
-                    throw new \SystemException('Configuration sidebarinfo erreur sur du showIF');
+        $map = $this->model->dsMapLabel($this->dsMap);
+        $vars = $map['ds'] ?? [];
+        $labelsData = [];
+        $arrays = [];
+        foreach ($vars as $key => $var) {
+            // Vérifier si la valeur de $var['value'] contient du HTML
+            if (empty($var['value'])) {
+                $var['value'] = 'INC';
+                $var['mode'] = 'label';
+                array_push($labelsData, $var);
+            } else if (!is_array($var['value'])) {
+                if ($this->isHtml($var['value'])) {
+                    $var['mode'] = 'raw';
+                } else {
+                    $var['mode'] = 'label';
                 }
-
-                $fieldInArray = in_array($fieldToTest, $tests);
-                if ($fieldInArray != $condition) {
-                    continue;
-                }
-            }
-            $type = $field['infoType'] ?? 'label';
-            $label = $field['label'] ?? null;
-            $icon = $field['icon'] ?? null;
-            $labelFrom = $field['labelFrom'] ?? null;
-            if ($labelFrom) {
-                $label = array_get($this->model, $labelFrom);
-            }
-            //
-            // $value = null;
-            // if ($modelValue = $field['modelValue'] ?? false) {
-            //     //Si il y a une valeur modèle valeur on va chercher la valeur dans le modèle et non dans le dotedArray
-            //     $value = $this->ds->getQuery()->{$modelValue};
-            // } else {
-            //     $fieldValue = $field['value'] ?? $key;
-            //     if ($fieldValue) {
-            //         $value = array_get($this->model, $fieldValue);
-            //     }
-            // }
-            $value = null;
-            //A conserver le temps du nettoyage de modelValue
-            if ($modelValue = $field['modelValue'] ?? false) {
-                $value = $modelValue;
-            } else if ($fieldValue = $field['value'] ?? $key) {
-                $value = array_get($this->model, $fieldValue);
-            }
-
-
-            $cssInfoClass = $field['cssInfoClass'] ?? null;
-            $link = null;
-            $bkRacine = $field['bkRacine'] ?? null;
-            $exRacine = $field['exRacine'] ?? null;
-            $racine = $field['racine'] ?? null;
-            $linkValue = $field['linkValue'] ?? null;
-            if ($linkValue) {
-                $linkValue = array_get($this->model, $linkValue);
+                array_push($labelsData, $var);
             } else {
-                $linkValue = $value;
-            }
-
-            if ($bkRacine && $linkValue) {
-                $link = \Backend::url($bkRacine . $linkValue);
-            } elseif ($exRacine && $linkValue) {
-                $link = $exRacine . $linkValue;
-            } elseif ($racine && $linkValue) {
-                $link = url($racine . $linkValue);
-            }
-            // } elseif ($linkValue) {
-            //     $link = $value;
-            // }
-
-
-
-            if ($type == 'workflow') {
-                $value = array_get($this->model, 'wfPlaceLabel');
-            }
-
-            if ($type == 'date') {
-                $mode = $field['mode'] ?? 'date-time';
-                $value = array_get($this->model, $fieldValue, 'Inconnu');
-                if ($value != 'Inconnu' && $value) {
-                    $date = new WakaDate();
-                    $value = DateTimeHelper::makeCarbon($value, false);
-                    $value =  $date->localeDate($value, $mode);
-                }
-            }
-
-
-            if ($type == 'state_logs') {
-                $value = [];
-                $logs = $this->model->state_logs()->orderBy('created_at')->get();
-                if ($logs) {
-                    $src_trad = $field['src_trad'] ?? null;
-                    foreach ($logs as $log) {
-                        $log_label = $log->name;
-                        if ($log->wf) {
-                            $log_label = Lang::get($src_trad . '::' . $log->wf . '.trans.' . $log_label);
-                        }
-                        $logDate = new WakaDate();
-                        $logValue = DateTimeHelper::makeCarbon($log['created_at'], false);
-                        $logvalue =  $logDate->localeDate($logValue, 'date-time');
-                        $obj = [
-                            'label' => $log_label,
-                            'user' => $log['user'] ?? 'inc',
-                            'created_at' => $logvalue,
-                        ];
-                        array_push($value, $obj);
-                    }
-                }
-            }
-            $group = $field['group'] ?? null;
-            //
-            $data = [
-                'icon' => $icon,
-                'label' => lang::get($label),
-                'value' => $value,
-                'cssInfoClass' => $cssInfoClass,
-                'link' => $link,
-                'type' => $type,
-                'group' => $group,
-                // 'view' => $this->findView($type),
-            ];
-            // if ($group) {
-            //     // Find existing group section with the same name or create a new one
-            //     if(!$parsedFieldsData[$group] ?? false) {
-            //         $parsedFieldsData[$group] = ['children' => []];
-            //     }
-            //     array_push($parsedFieldsData[$group]['children'], $data);
-            // } else {
-            //     array_push($parsedFieldsData, $data);
-            // }
-            $parsedFieldsData[$key] = $data;
-            // array_push($parsedFields, $viewLi);
-        }
-        //trace_log($parsedFieldsData);
-        $parsedFieldsData = $this->groupArray($parsedFieldsData);
-        //trace_log($parsedFieldsData);
-        return $this->groupArray($parsedFieldsData);
-    }
-
-    private function groupArray($array)
-    {
-        // Prépare un tableau pour stocker les résultats
-        $result = [];
-
-        // Parcours le tableau
-        foreach ($array as $key => $value) {
-            // Si l'élément a une clé 'group', le déplace sous l'élément correspondant
-            if (isset($value['group']) && $value['group'] != '') {
-                $group = $value['group'];
-                if (!isset($result[$group]['children'])) {
-                    $result[$group]['children'] = [];
-                }
-                $result[$group]['children'][$key] = $value;
-            } else {
-                // Sinon, ajoute simplement l'élément au résultat
-                $result[$key] = $value;
+                trace_log('prepareArrayVar key ', $key);
+                trace_log('prepareArrayVar var ', $var);
+                $transformedVar = $this->prepareArrayVar($key,$var);
+                $arrays[$key] = [
+                        'label' => $var['label'],
+                        'data' => $transformedVar,
+                    ];
             }
         }
-
-        return $result;
+        $this->vars['labels'] = [
+            'label' => 'Info de base',
+            'data' => $labelsData
+        ];
+        $this->vars['arrays'] = $arrays;
+        //trace_log($labelsData);
+        //trace_log($arrays);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function loadAssets()
+    private function prepareArrayVar($key,$vars)
     {
-        // $this->addCss(); INUTILE EST GERE DANS LE WAKA.LESS de WCONFIG
+        $varsToReturn = [];
+        //trace_log($vars);
+        foreach ($vars['value'] as $subkey => $var) {
+            $returnedVar = [];
+            if(!is_array($var)) {
+                //Le groupe d'info est un simple string. On deplace var dans un tableau contenant value
+                $returnedVar['value'] = $var;
+            } else {
+                //Sinon le comportement classique
+                $returnedVar = $var;
+            }
+            if(is_array($returnedVar['value'])) {
+                $returnedVar['mode'] = 'raw';
+            }
+            else if ($this->isHtml($returnedVar['value'])) {
+                $returnedVar['mode'] = 'raw';
+            } else {
+                $returnedVar['mode'] = 'label';
+            }
+            $varsToReturn[$subkey] = $returnedVar;
+        }
+        return $varsToReturn;
     }
+
+    private function isHtml($value)
+    {
+        $isHtml = $value !== strip_tags($value, '<a>');
+        if (!$isHtml) {
+            return false;
+        }
+        // trace_log($value. : .is_numeric($isHtml));
+        //la methode employé au dessus considère aussi les integer comme du html d'ou la seconde verification. 
+        if (is_numeric($value)) {
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * @inheritDoc
@@ -248,15 +136,5 @@ class ModelInfo extends FormWidgetBase
     public function getSaveValue($value)
     {
         return \Backend\Classes\FormField::NO_SAVE_DATA;
-    }
-
-    public function getMIDate()
-    {
-    }
-    public function getMIWorkflow()
-    {
-    }
-    public function getMILink()
-    {
     }
 }
