@@ -86,6 +86,8 @@ trait DsFunctions
             return [];
         }
 
+        //trace_log('dsImage!',$field);
+
         $width = $field['params']['width'] ?? 500;
         $height = $field['params']['height'] ?? 500;
         $mode = $field['params']['mode'] ?? 'auto';

@@ -71,8 +71,8 @@ class ModelInfo extends FormWidgetBase
                 }
                 array_push($labelsData, $var);
             } else {
-                trace_log('prepareArrayVar key ', $key);
-                trace_log('prepareArrayVar var ', $var);
+                //trace_log('prepareArrayVar key ', $key);
+                //trace_log('prepareArrayVar var ', $var);
                 $transformedVar = $this->prepareArrayVar($key,$var);
                 $arrays[$key] = [
                         'label' => $var['label'],

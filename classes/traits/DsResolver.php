@@ -22,6 +22,8 @@ trait DsResolver
         if(!$fields) {
             throw new ApplicationException('Impossible de trouver dans map les fields '.$key.' dans '.get_class($this));
         }
+        //trace_log('dsMpap fields ! ',$fields);
+        //trace_log('dsMpap paramsVar ! ',$paramsVar);
         $fields = $this->mergeParams($fields, $paramsVar);
 
         $dsDatas = [];
