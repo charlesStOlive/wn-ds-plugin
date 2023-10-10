@@ -167,7 +167,7 @@ class DsBehavior extends ExtensionBase
         $yamlFile = $this->guessConfigPathFrom($this->parent, '/map.yaml');
 
         if (!file_exists($yamlFile)) {
-            throw new \Exception("No YAML file found for class " . get_class($this));
+            throw new \Exception("No file map YAML  found for class " . get_class($this));
         }
 
         // Parse YAML

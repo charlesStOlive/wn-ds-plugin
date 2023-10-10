@@ -52,7 +52,13 @@ trait DsFunctions
         if (!$dsMapKey = $field['dsMap'] ?? false) {
             // Without dsMap, return data array
             //trace_log('pas de dsMap, on retourne simplement le model toArray');
-            return $multi ? $relationData->toArray() : $relationData->first()->toArray();
+            if($select = $field['select'] ?? false) {
+                if($multi) throw new \ApplicationException('Il est interdit d avoir un select dans un ds de type relationS');
+                return $relationData->first()->{$select};
+            } else {
+                return $multi ? $relationData->toArray() : $relationData->first()->toArray();
+            }
+            
         } else {
             // With dsMap, use related model's dsMap if available
             if (!method_exists($relationData->first(), 'dsMap')) {
@@ -125,20 +131,51 @@ trait DsFunctions
         })->toArray();
     }
 
-    public function dsAttachfilePath($key, $field, $opt) {
+    public function dsPathFile($key, $field, $opt)
+    {
+        $key = $this->dsGetValueFrom($key, $field,  $opt);
+        //
+        if (!$this->hasRelation($key)) {
+            throw new \Exception("Relation $key does not exist in " . get_class($this));
+        }
+        $relationData = $this->{$key}()->get();
 
+        if ($relationData->isEmpty()) {
+            return [];
+        }
+
+        //trace_log('dsImage!',$field);
+
+
+        return [
+            'label' => $field['label'] ?? 'inc',
+            'path' => $this->{$key}->getLocalPath(),
+        ];
+    }
+
+
+    public function dsPathFiles($key, $field, $opt)
+    {
         $key = $this->dsGetValueFrom($key, $field, $opt);
         //
         if (!$this->hasRelation($key)) {
             throw new \Exception("Relation $key does not exist in " . get_class($this));
         }
-        $relationData = $this->{$key};
+        $relationData = $this->{$key}()->get();
 
-        if (!$relationData) {
-            return null;
+        if ($relationData->isEmpty()) {
+            return [];
         }
-        return $relationData->getLocalPath();
+
+        return $relationData->map(function ($file, $key) {
+            $label =  $field['label'] ?? 'inc';
+            return [
+                'label' => $label.'_'.$key,
+                'path' => $file->getLocalPath(),
+            ];
+        })->toArray();
     }
+
 
     public function dsDate($key, $field, $opt)
     {
@@ -205,23 +242,38 @@ trait DsFunctions
 
     public function dsNl2br($key, $field, $opt)
     {
+        $key = $this->dsGetValueFrom($key, $field, $opt);
         return nl2br($this->{$key});
     }
 
     public function dsBoUrl($key, $field, $opt)
     {
-        if ($this->{$key}) {
+        //trace_log('dsBoUrl : '.$key, $field);
+        $key = $this->dsGetValueFrom($key, $field, $opt);
+        $class = null;
+        $finalId = null;
+        //trace_log($key);
+        $name = null;
+        if($key == 'id') {
+            $class = Str::normalizeClassName(get_class($this));
+            $finalId = $this->id;
+            $name = $this->name ?: 'model';
+        } else if ($this->{$key}) {
             $class = Str::normalizeClassName(get_class($this->{$key}));
-            $parts = explode("\\", $class);
-            //trace_log($parts);
-            $vendorName = strtolower($parts[1]);
-            $pluginName = strtolower($parts[2]);
-            $modelName = Str::plural(strtolower($parts[4]));
-            //
+            $finalId = $this->{$key}->id;
             $name = $this->{$key}->name ?: 'pas de champs name';
-            //
-            $url = sprintf('%s/%s/%s/update/', $vendorName, $pluginName, $modelName);
-            return  sprintf("<a href='%s'>%s</a>", \Backend::url($url . $this->{$key}->id), $name);
+        } else {
+            return null;
         }
+        //trace_log('class ',$class);
+        //trace_log('finalId',$finalId);
+        //trace_log('key',$key);
+        $parts = explode("\\", $class);
+        $vendorName = strtolower($parts[1]);
+        $pluginName = strtolower($parts[2]);
+        $modelName = Str::plural(strtolower($parts[4]));
+        $url = sprintf('%s/%s/%s/update/', $vendorName, $pluginName, $modelName);
+        return  sprintf("<a href='%s'>%s</a>", \Backend::url($url . $finalId), $name);
+
     }
 }

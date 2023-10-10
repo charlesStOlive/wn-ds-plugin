@@ -1,11 +1,8 @@
 <?php
 
 return [
-    'permissions' => [
-        'some_permission' => 'Some permission'
-    ],
     'plugin' => [
-        'description' => 'No description provided yet...',
-        'name' => 'ds'
-    ]
+        'description' => 'Gestion des Mappages DS',
+        'name' => 'ds',
+    ],
 ];

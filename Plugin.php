@@ -5,6 +5,7 @@ namespace Waka\Ds;
 use Backend;
 use Backend\Models\UserRole;
 use System\Classes\PluginBase;
+use System\Classes\CombineAssets;
 
 /**
  * ds Plugin Information File
@@ -29,6 +30,9 @@ class Plugin extends PluginBase
      */
     public function register(): void
     {
+        CombineAssets::registerCallback(function ($combiner) {
+            $combiner->registerBundle('$/waka/ds/formwidgets/modelinfo/assets/css/modelinfo.less');
+        });
         
     }
 

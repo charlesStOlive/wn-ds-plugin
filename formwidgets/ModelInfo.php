@@ -18,7 +18,7 @@ class ModelInfo extends FormWidgetBase
     protected $defaultAlias = 'waka_ds_model_info';
 
     public $fields = [];
-    public $label = "wcli.ds::formwidgets.modelInfo.label";
+    public $label = null;
     public $ds;
     public $src;
     public $parsedFields;
@@ -45,14 +45,27 @@ class ModelInfo extends FormWidgetBase
     {
         //trace_log('render MODEL INFO');
         $this->prepareVars();
-        $this->vars['label'] = $this->label;
         return $this->makePartial('modelInfo');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function loadAssets()
+    {
+        $this->addCss('css/collapser.css', 'Waka.Ds');
+        $this->addCss('css/modelinfo.css', 'Waka.Ds');
+        $this->addJs('js/collapser.js', 'Waka.Ds');
+        $this->addJs('js/modelinfo.js', 'Waka.Ds');
     }
     /**
      * Prepares the form widget view data
      */
     public function prepareVars()
     {
+        if (!$this->model->methodExists('dsMap')) {
+            throw new \Exception("Il manque le trait ds dans la classe  " . get_class($this->model));
+        }
         $map = $this->model->dsMapLabel($this->dsMap);
         $vars = $map['ds'] ?? [];
         $labelsData = [];

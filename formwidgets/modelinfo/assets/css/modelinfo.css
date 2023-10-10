@@ -1,0 +1,7 @@
+.mi_bloc ul{list-style-type:none;margin-left:0;padding-left:0}
+.mi_bloc h5{text-transform:uppercase;color:#35425b;margin:5px 0 0}
+.mi_bloc li>div{display:flex;flex-wrap:wrap;align-items:flex-start}
+.mi_label{margin-right:10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mi_raw{margin-top:5px}
+.mi_value{flex-grow:1;min-width:0;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mi_value a{color:#f87f04}
