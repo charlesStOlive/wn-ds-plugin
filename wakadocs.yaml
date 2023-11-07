@@ -1,0 +1,8 @@
+files:
+    ds:
+        title: Data source
+        category_slug: "modules"
+        comment: "Gestion des dataSource"
+        permission: waka.docser.modules
+        relativePath: waka/ds/docs
+        sort_order: 1000

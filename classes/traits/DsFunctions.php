@@ -30,13 +30,13 @@ trait DsFunctions
         $relationData = $this->{$key}();
 
         // Apply optional scope
+        //trace_log($field['params'] ?? 'pas de params');;
         if ($scope = $field['params']['scope'] ?? false) {
             $scopeName = $scope['name'] ?? false;
             $scopeParam = $scope['param'] ?? null;
-            if (!$scopeParam) {
-                $scopeParam = $scope['params'] ?? null;
-            }
             $relationData = $relationData->{$scopeName}($scopeParam);
+            //trace_log($scopeName);
+            //trace_log($scopeParam);
         }
 
         // Retrieve relation data
@@ -103,6 +103,11 @@ trait DsFunctions
             'width' => $width,
             'height' => $height,
         ];
+    }
+
+    public function dsPivotData($key, $field, $opt) {
+        $key = $this->dsGetValueFrom($key, $field, $opt);
+        return $this->{$key}->toArray();
     }
 
     public function dsImages($key, $field, $opt)
@@ -183,7 +188,7 @@ trait DsFunctions
         if (!$this->{$key}) {
             return null;
         }
-        $dateFormat = $field['format'] ?? 'd-m-Y H:i';
+        $dateFormat = $field['format'] ?? 'd-m-y H:i';
         if ($this->{$key} instanceof \Carbon\Carbon) {
             return $this->{$key}->format($dateFormat);
         } else {
