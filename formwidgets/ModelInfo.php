@@ -108,14 +108,18 @@ class ModelInfo extends FormWidgetBase
         //trace_log($vars);
         foreach ($vars['value'] as $subkey => $var) {
             $returnedVar = [];
-            if(!is_array($var)) {
+            if(!is_iterable($var)) {
                 //Le groupe d'info est un simple string. On deplace var dans un tableau contenant value
                 $returnedVar['value'] = $var;
             } else {
                 //Sinon le comportement classique
                 $returnedVar = $var;
             }
-            if(is_array($returnedVar['value'])) {
+            $returnedVarSubValue = $returnedVar['value'] ?? false;
+            if(!$returnedVarSubValue) {
+                continue;
+            }
+            if(is_iterable($returnedVar['value'])) {
                 $returnedVar['mode'] = 'raw';
             }
             else if ($this->isHtml($returnedVar['value'])) {

@@ -10,7 +10,10 @@ trait DsConfigs
     public function dsGetParamsConfig($key = 'main')
     {
         if (empty(trim($key))) $key = 'main';
-        $configFields = $this->getYamlMapConfig()[$key]['fields'];
+        $configFields = $this->getYamlMapConfig()[$key]['fields'] ?? null;
+        if(!$configFields) {
+            throw new \ApplicationException('Il manque '.$key.' dans le fichier map.yaml du modèle '.get_class($this));
+        }
         $finalFields = [];
 
         foreach ($configFields as $fieldKey => $configfield) {
