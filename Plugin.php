@@ -36,14 +36,6 @@ class Plugin extends PluginBase
         
     }
 
-    /**
-     * Boot method, called right before the request route.
-     */
-    public function boot(): void
-    {
-    
-    }
-
     public function registerMarkupTags()
     {
         return [
@@ -65,23 +57,5 @@ class Plugin extends PluginBase
         return [
             'Waka\Ds\FormWidgets\ModelInfo' => 'modelinfo',
         ];
-    }
-
-    /**
-     * Registers any backend permissions used by this plugin.
-     */
-    public function registerPermissions(): array
-    {
-        return []; // Remove this line to activate
-
-    }
-
-    /**
-     * Registers backend navigation items for this plugin.
-     */
-    public function registerNavigation(): array
-    {
-        return []; // Remove this line to activate
-
     }
 }
