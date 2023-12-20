@@ -4,4 +4,4 @@
 .mi_label{margin-right:10px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .mi_raw{margin-top:5px}
 .mi_value{flex-grow:1;min-width:0;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.mi_value a{color:#f87f04}
+.mi_value a{color:var(--wa-color)}
